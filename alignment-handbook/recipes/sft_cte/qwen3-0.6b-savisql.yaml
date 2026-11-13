@@ -1,0 +1,76 @@
+# Model arguments:
+model_name_or_path: Qwen/Qwen3-0.6B
+model_revision: main
+torch_dtype: bfloat16
+attn_implementation: flash_attention_2
+#attn_implementation: sdpa
+#attn_implementation: eager
+
+# Data training arguments
+dataset_num_proc: 16
+dataset_mixture:
+  datasets:
+    - id: griffith-bigdata/savisql-text2cte-dataset
+      split: train_sft
+      weight: 1.0
+    - id: griffith-bigdata/savisql-text2sql-dataset
+      split: train_sft
+      weight: 1.0
+
+  test_split_size: 10
+  seed: 0
+# SFT trainer config
+completion_only_loss: true
+bf16: true
+packing: true
+do_eval: false
+eval_strategy: "steps"
+eval_steps: 1000
+gradient_accumulation_steps: 32
+gradient_checkpointing: true
+#gradient_checkpointing_kwargs:
+#  use_reentrant: false
+hub_model_id: griffith-bigdata/SAVI-SQL-0.6B
+hub_strategy: every_save
+
+#learning_rate: 1.0e-04
+#learning_rate: 3.0e-05
+#learning_rate: 1.0e-05
+learning_rate: 1.0e-04
+log_level: info
+logging_steps: 100
+logging_strategy: steps
+lr_scheduler_type: cosine
+#max_length: 4096 #
+max_length: 8192 #
+#max_length: 6144 #
+#max_length: 12288 #
+#max_length: 13312 #
+#max_length: 14336 #
+#max_length: 16384 #
+#max_length: 24576    #
+
+max_steps: -1
+num_train_epochs: 1
+
+output_dir: output/SAVI-SQL-0.6B #
+
+overwrite_output_dir: true
+per_device_eval_batch_size: 1
+per_device_train_batch_size: 1
+push_to_hub: true
+remove_unused_columns: true
+report_to:
+- tensorboard
+#save_strategy: "epoch"
+save_strategy: "steps"
+save_steps: 2000
+save_total_limit: 3
+seed: 42
+#tf32: false # for rtx2080i
+tf32: true # for 6000
+
+# hf auth login
+# CUDA_VISIBLE_DEVICES=1 proxychains python scripts/sft.py --config recipes/sft_cte/qwen3-0.6b-savisql.yaml
+# CUDA_VISIBLE_DEVICES=1  ACCELERATE_LOG_LEVEL=info accelerate launch --main_process_port 29604 --config_file recipes/accelerate_configs/deepspeed_zero3.yaml  scripts/sft.py  --config  recipes/sft_cte/qwen3-0.6b-savisql.yaml
+
